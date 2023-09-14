@@ -1,4 +1,8 @@
-```{r load libraries, echo=FALSE}
+# COI Management Tracker + Formatter
+Please read the readme if you haven't already! 
+
+## 0. Load appropriate libraries
+```{r load libraries, results=FALSE, message=FALSE}
 library(tidyverse)
 library(readxl)
 library(lubridate)
@@ -138,7 +142,7 @@ write.csv(usdacois_agg[,c("fullname","A","C","M")], paste0("USDACOI_Muenich_",to
 
 ### view the head of this formatted to see it compares to what you are used to for this table
 
-```{r view nsf table 3 format}
+```{r view usda format}
 head(usdacois_agg[,c("fullname","A","C","M")])
 ```
 
