@@ -12,5 +12,5 @@ If this saves you some time let me know, it is saving me time!
     + [current USDA COI](https://www.nifa.usda.gov/application-support-templates)
 
 
-*To learn more about linking to ORCI*
+*To learn more about linking to ORCID*
 I may update this later to link to ORCID so you don't have to maintain the database. I used oRCID for my CV, but it doesn't have all potential COIs, like proposals under review. So that is why I went with this. But if you want to learn more check out: (https://ciakovx.github.io/rorcid.html)
