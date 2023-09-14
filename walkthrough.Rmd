@@ -1,0 +1,145 @@
+```{r load libraries, echo=FALSE}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+```
+
+## 1. First We will read in the data. The column order doesn't matter, but basic info on the COI is needed.
+
+```{r read data}
+
+coi<-read_excel("COIMGT.xlsx")
+coi$`COI TYPE`<-as.factor(coi$`COI TYPE`)
+coi$fullname<-paste(coi$`COI Last Name`,coi$`COI First Name`,sep=", ")
+
+str(coi) #checking that dates read in correctly
+
+head(coi) #look at the head to see columns included 
+```
+
+## 2. Next let's set up the time period to look for COIs
+Every agency may have a different window that they consider a recent COI that you need to report. For example:
+* NSF is 48 months
+* USDA is 36 months
+
+```{r time}
+setback<-48 ## set number of months here
+today<-date(now())
+coidate<-date(now()-months(setback)) 
+```
+
+## 3. Filter COIs for required time period 
+
+```{r filter}
+cois<-coi[coi$Enddate>coidate,]
+```
+
+## 4. Separate by type of COI
+For most agencies they want to know the type of COI, so we want to separate by COI type, then remove duplicates within each category, before recombining to summarize
+
+In the example I only have listed grant collaborators, co-authors, and mentees/advisors categories but you could add more if needed.
+
+```{r category}
+cois_c<-cois[cois$`COI TYPE`=="grant",]
+cois_a<-cois[cois$`COI TYPE`=="publication",]
+cois_m<-coi[coi$`COI TYPE`=="mentee" | coi$`COI TYPE`== "mentor",] #not I don't use filtered version bc last active date doesn't matter here
+```
+
+## 5. Remove duplicates
+
+In this section, we are removing any duplicates and keeping the more recent COI in case of duplicates. When this function removes duplicates it keeps first listed, so that's why we arrange by most recent first before removing the duplicates
+
+```{r duplicates}
+cois_c<-cois_c %>%
+  arrange(desc(Enddate)) %>%
+  distinct(fullname, .keep_all = TRUE)
+cois_a<-cois_a %>%
+  arrange(desc(Enddate)) %>%
+  distinct(fullname, .keep_all = TRUE)
+cois_m<-cois_m %>%
+  arrange(desc(Enddate)) %>%
+  distinct(fullname, .keep_all = TRUE)
+```
+
+## 6. Formatting for specific agencies
+
+### 6.A. CREATING NSF TABLE 4 OF COA 
+
+Table 4 of the COA for NSF is the most daunting because it is all collaborators and co-authors in last 48 months. I have copied the requirement for this table below, then you will find the code to format your COI for that table.
+
+From the NSF COI as of 9/12/2023:
+* List names as last name, first name, middle initial, and provide organizational affiliations, if known, for the following:
+    + Co-authors on any book, article, report, abstract or paper with collaboration in the last 48 months (publication date may be later); and
+    + Collaborators on projects, such as funded awards, graduate research or others in the last 48 months. 
+
+```{r nsf table 4 write}
+nsfcois_write<-rbind(cois_c,cois_a)
+nsfcois_write<-nsfcois_write %>%
+  arrange(fullname)
+nsfcois_write$nsftype<-ifelse(nsfcois_write$`COI TYPE`=="grant","C:","A:")
+
+write.csv(nsfcois_write[,c("nsftype","fullname","COI Institution","Enddate")], paste0("NSFCOA_T4_Muenich_",today,".csv"), row.names = FALSE)
+```
+
+### view the head of this formatted to see it compares to what you are used to for this table
+
+```{r view nsf table 4 format}
+head(nsfcois_write[,c("nsftype","fullname","COI Institution","Enddate")])
+```
+
+
+### 6.B. CREATING NSF TABLE 3 OF COA 
+
+In Table 3, NSF wants you to list names as last name, first name, middle initial, and provide organizational affiliations, if known, for the following: 
+* G: The individual’s Ph.D. advisors; and
+* T: All of the individual’s Ph.D. thesis advisees.
+
+In this code I use cois_m, which is based on coi (all) not cois (filtered by date) because typically for these relationships the COI exists forever, not just during a recent time period.
+
+```{r nsf table 3}
+nsfcois_write <- cois_m %>%
+  arrange(fullname)
+nsfcois_write$nsftype<-ifelse(nsfcois_write$`COI TYPE`=="mentor","G:","T:")
+
+write.csv(nsfcois_write[,c("nsftype","fullname","COI Institution")], paste0("NSFCOA_T3_Muenich_",today,".csv"), row.names = FALSE)
+```
+
+### view the head of this formatted to see it compares to what you are used to for this table
+
+```{r view nsf table 3 format}
+head(nsfcois_write[,c("nsftype","fullname","COI Institution")])
+```
+
+### 6.C. CREATING USDA COI LIST    
+
+The USDA COI List requires you to list alphabetically – with last name first -- the full names of the following individuals (updated 9/12/2023):
+* All co-authors on publications within the past three years, including pending publications and submissions
+* All collaborators on projects within the past three years, including current and planned collaborations
+* All thesis or postdoctoral advisees/advisors
+* All persons in your field with whom you have had a consulting/financial arrangement/other conflict-of-interest in the past three years
+
+The USDA table is slightly different than NSF in that you only have one row per COI person, then you mark the different points of COI. 
+
+** if you ran this already for NSF go back and re-run steps 1-5 using the USDA times step of 36 months before running this **
+
+```{r usda}
+usdacois_agg<-cois %>%
+  arrange(fullname) %>%
+  distinct(fullname, .keep_all = TRUE)
+
+usdacois_agg$C<-ifelse(usdacois_agg$fullname %in% cois_c$fullname,"X","")
+usdacois_agg$A<-ifelse(usdacois_agg$fullname %in% cois_a$fullname,"X","")
+usdacois_agg$M<-ifelse(usdacois_agg$fullname %in% cois_m$fullname,"X","")
+
+
+# write csv to copy to USDA template
+write.csv(usdacois_agg[,c("fullname","A","C","M")], paste0("USDACOI_Muenich_",today,".csv"), row.names = FALSE)
+```
+
+### view the head of this formatted to see it compares to what you are used to for this table
+
+```{r view nsf table 3 format}
+head(usdacois_agg[,c("fullname","A","C","M")])
+```
+
+
