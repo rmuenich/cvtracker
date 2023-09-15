@@ -4,6 +4,14 @@ Like many researchers, I try to focus my time on developing new ideas and creati
 
 If this saves you some time let me know, it is saving me time!
 
+### Files in this repository
+
+* COIMGT.xlsx - this is a fake example of COIs :) 
+* NSFCOA_T3_Muenich_[DATE].xlsx - example of running the code for NSF time period, table 3
+* NSFCOA_T4_Muenich_[DATE].xlsx - example of running the code for NSF time period, table 4
+* USDACOA_Muenich_[DATE].xlsx - example of running the code for USDA time period and format
+* walkthrough.html and .RMD - the code in an html document created from the R markdown
+
 **Currently Includes**
 
 * NSF Tables 3 & 4
