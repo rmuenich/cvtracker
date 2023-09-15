@@ -12,7 +12,7 @@ If this saves you some time let me know, it is saving me time!
 * USDACOA_Muenich_[DATE].xlsx - example of running the code for USDA time period and format
 * walkthrough.html and .RMD - the code in an html document created from the R markdown
 
-**Currently Includes**
+**Formats Currently Included**
 
 * NSF Tables 3 & 4
     + [current NSF COA](https://new.nsf.gov/funding/senior-personnel-documents#collaborators-and-other-affiliations-2b3)
