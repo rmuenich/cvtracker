@@ -25,6 +25,7 @@ head(coi) #look at the head to see columns included
 Every agency may have a different window that they consider a recent COI that you need to report. For example:
 * NSF is 48 months
 * USDA is 36 months
+* NOAA is 48 months
 
 ```{r time}
 setback<-48 ## set number of months here
@@ -38,7 +39,7 @@ coidate<-date(now()-months(setback))
 cois<-coi[coi$Enddate>coidate,]
 ```
 
-## 4. Separate by type of COI
+## 4. Separate by type of COI [skip to 6D for NOAA; it does not require separating out]
 For most agencies they want to know the type of COI, so we want to separate by COI type, then remove duplicates within each category, before recombining to summarize
 
 In the example I only have listed grant collaborators, co-authors, and mentees/advisors categories but you could add more if needed.
@@ -146,4 +147,27 @@ write.csv(usdacois_agg[,c("fullname","A","C","M")], paste0("USDACOI_Muenich_",to
 head(usdacois_agg[,c("fullname","A","C","M")])
 ```
 
+### 6.D. CREATING NOAA COI LIST    
+
+NOAA COI List requires you to list in separate columns the first name, last name, and institution of the following individuals (updated 8/12/2024):
+Collaborators are individuals who have participated in a project or publication within the last 48 months with any investigator, including co-authors on publications. Collaborators also include those persons with whom the investigators may have ongoing collaboration negotiations. Advisees and advisors do not have a time limit. Advisees are persons with whom the individual investigator has had an association as thesis or dissertation advisor or postdoctoral sponsor. Advisors include an individual’s own graduate and postgraduate advisors. Unfunded participants in the proposed study should also be  included on the list, but not their collaborators.
+
+The NOAA table separates out first and last name and does not require the type of collaborator. 
+
+
+```{r noaa}
+noaacois_agg<-cois %>%
+  arrange(fullname) %>%
+  distinct(fullname, .keep_all = TRUE)
+
+
+# write csv to copy to NOAA template
+write.csv(noaacois_agg[,c("COI First Name","COI Last Name","COI Institution")], paste0("NOAACOI_Muenich_",today,".csv"), row.names = FALSE)
+```
+
+### view the head of this formatted to see it compares to what you are used to for this table
+
+```{r view noaa format}
+head(noaacois_agg[,c("COI First Name","COI Last Name","COI Institution")])
+```
 
