@@ -357,8 +357,13 @@ display: none;
 <p>Please read the readme if you haven’t already!</p>
 <div id="load-appropriate-libraries" class="section level2">
 <h2>0. Load appropriate libraries</h2>
-<pre class="r"><code>library(tidyverse)
-library(readxl)
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 4.3.3</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 4.3.3</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 4.3.3</code></pre>
+<pre><code>## Warning: package &#39;readr&#39; was built under R version 4.3.3</code></pre>
+<pre><code>## Warning: package &#39;stringr&#39; was built under R version 4.3.2</code></pre>
+<pre class="r"><code>library(readxl)
 library(lubridate)</code></pre>
 </div>
 <div id="first-we-will-read-in-the-data.-the-column-order-doesnt-matter-but-basic-info-on-the-coi-is-needed." class="section level2">
@@ -395,7 +400,7 @@ str(coi) #checking that dates read in correctly</code></pre>
 <h2>2. Next let’s set up the time period to look for COIs</h2>
 <p>Every agency may have a different window that they consider a recent
 COI that you need to report. For example: * NSF is 48 months * USDA is
-36 months</p>
+36 months * NOAA is 48 months</p>
 <pre class="r"><code>setback&lt;-48 ## set number of months here
 today&lt;-date(now())
 coidate&lt;-date(now()-months(setback)) </code></pre>
@@ -404,8 +409,9 @@ coidate&lt;-date(now()-months(setback)) </code></pre>
 <h2>3. Filter COIs for required time period</h2>
 <pre class="r"><code>cois&lt;-coi[coi$Enddate&gt;coidate,]</code></pre>
 </div>
-<div id="separate-by-type-of-coi" class="section level2">
-<h2>4. Separate by type of COI</h2>
+<div id="separate-by-type-of-coi-skip-to-6d-for-noaa-it-does-not-require-separating-out" class="section level2">
+<h2>4. Separate by type of COI [skip to 6D for NOAA; it does not require
+separating out]</h2>
 <p>For most agencies they want to know the type of COI, so we want to
 separate by COI type, then remove duplicates within each category,
 before recombining to summarize</p>
@@ -533,6 +539,44 @@ used to for this table</h3>
 ## 4 Lawson, Darcy     &quot;&quot;    &quot;&quot;    &quot;X&quot;  
 ## 5 Maas, Sarah J     &quot;X&quot;   &quot;&quot;    &quot;&quot;   
 ## 6 Spice, Ice        &quot;&quot;    &quot;X&quot;   &quot;&quot;</code></pre>
+</div>
+<div id="d.-creating-noaa-coi-list" class="section level3">
+<h3>6.D. CREATING NOAA COI LIST</h3>
+<p>NOAA COI List requires you to list in separate columns the first
+name, last name, and institution of the following individuals (updated
+8/12/2024): Collaborators are individuals who have participated in a
+project or publication within the last 48 months with any investigator,
+including co-authors on publications. Collaborators also include those
+persons with whom the investigators may have ongoing collaboration
+negotiations. Advisees and advisors do not have a time limit. Advisees
+are persons with whom the individual investigator has had an association
+as thesis or dissertation advisor or postdoctoral sponsor. Advisors
+include an individual’s own graduate and postgraduate advisors. Unfunded
+participants in the proposed study should also be included on the list,
+but not their collaborators.</p>
+<p>The NOAA table separates out first and last name and does not require
+the type of collaborator.</p>
+<pre class="r"><code>noaacois_agg&lt;-cois %&gt;%
+  arrange(fullname) %&gt;%
+  distinct(fullname, .keep_all = TRUE)
+
+
+# write csv to copy to NOAA template
+write.csv(noaacois_agg[,c(&quot;COI First Name&quot;,&quot;COI Last Name&quot;,&quot;COI Institution&quot;)], paste0(&quot;NOAACOI_Muenich_&quot;,today,&quot;.csv&quot;), row.names = FALSE)</code></pre>
+</div>
+<div id="view-the-head-of-this-formatted-to-see-it-compares-to-what-you-are-used-to-for-this-table-3" class="section level3">
+<h3>view the head of this formatted to see it compares to what you are
+used to for this table</h3>
+<pre class="r"><code>head(noaacois_agg[,c(&quot;COI First Name&quot;,&quot;COI Last Name&quot;,&quot;COI Institution&quot;)])</code></pre>
+<pre><code>## # A tibble: 6 × 3
+##   `COI First Name` `COI Last Name` `COI Institution`                
+##   &lt;chr&gt;            &lt;chr&gt;           &lt;chr&gt;                            
+## 1 Coffea           Arabica         Ethiopia                         
+## 2 River            Banks           University of California, Berkely
+## 3 Theodor S        Geisel          Dartmouth College                
+## 4 Darcy            Lawson          École Polytechnique              
+## 5 Sarah J          Maas            Hamilton College                 
+## 6 Ice              Spice           Capitol Records</code></pre>
 </div>
 </div>
 </div>
