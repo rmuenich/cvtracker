@@ -2,7 +2,7 @@ library(tidyverse)
 library(readxl)
 library(lubridate)
 
-coi<-read_excel("C:\\Users\\rlogsdo\\OneDrive - University of Arkansas\\Service\\COIMGT.xlsx")
+coi<-read_excel("COIMGT.xlsx")
 coi$`COI TYPE`<-as.factor(coi$`COI TYPE`)
 coi$fullname<-paste(coi$`COI Last Name`,coi$`COI First Name`,sep=", ")
 
@@ -18,8 +18,6 @@ coidate<-date(now()-months(setback))
 
 # filter your COIs for ending dates after your COI date
 cois<-coi[coi$Enddate>coidate,]
-#nsfcois<-nsfcois %>%
-# arrange(`COI Last Name`,`COI First Name`)
 
 ### Separate by type of COI
 ## for most agencies they want to know the type of COI, so we want to separate by COI type, then remove duplicates within each category, before recombining to summarize
@@ -40,8 +38,6 @@ cois_a<-cois_a %>%
 cois_m<-cois_m %>%
   arrange(desc(Enddate)) %>%
   distinct(fullname, .keep_all = TRUE)
-
-
 
 
 #######################################
@@ -88,7 +84,7 @@ write.csv(nsfcois_write[,c("nsftype","fullname","COI Institution")], paste0("NSF
 ###- All persons in your field with whom you have had a consulting/financial arrangement/other conflict-of-interest in the past three years
 #name (Last, first), co-author, collaborator, advisee/advisor, other-specify
 
-####START HERE SKIP REST let's work to format for usda (starting with nsfcois_write)
+####START HERE SKIP REST
 usdacois_agg<-cois %>%
   arrange(fullname) %>%
   distinct(fullname, .keep_all = TRUE)
@@ -123,4 +119,4 @@ noaacois_agg<-cois %>%
 
 # write csv to copy to NOAA template
 #First Name, Last Name, Institution
-write.csv(noaacois_agg[,c("COI Last Name","COI First Name","COI Institution")], paste0("NOAACOI_Muenich_",today,".csv"), row.names = FALSE)
+write.csv(noaacois_agg[,c("COI First Name","COI Last Name","COI Institution")], paste0("NOAACOI_Muenich_",today,".csv"), row.names = FALSE)
